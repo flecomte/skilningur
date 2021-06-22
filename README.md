@@ -1,0 +1,2 @@
+# Skilningur
+Educational meeting platform

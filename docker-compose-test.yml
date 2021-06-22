@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  postgres:
+    container_name: ${APP_NAME}_postgresql_test
+    build:
+      context: docker/postgresql
+    ports:
+      - 15432:5432
+    environment:
+      POSTGRES_PASSWORD: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_PWD}
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "${DB_NAME}", "-U", "${DB_USER}" ]
+      interval: 3s
+      timeout: 2s
+      retries: 20

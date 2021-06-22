@@ -1,0 +1,45 @@
+# To execute this docker-compose yml file use docker-compose -f <file_name> up
+# Add the "-d" flag at the end for detached execution
+version: '3.8'
+services:
+  openapi:
+    container_name: ${APP_NAME}_openapi
+    image: swaggerapi/swagger-ui
+    ports:
+      - ${OPENAPI_PORT}:8080
+    environment:
+      URL: "http://localhost:8080"
+
+  app:
+    container_name: ${APP_NAME}_app
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    ports:
+      - ${APP_PORT}:8080
+    environment:
+      DB_HOST: ${DB_HOST}
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: ${APP_NAME}_postgresql
+    build:
+      context: docker/postgresql
+    ports:
+      - ${POSTGRESQL_PORT}:5432
+    environment:
+      POSTGRES_PASSWORD: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_PWD}
+    volumes:
+      - ./var/log/postgresql:/var/log/postgresql:rw
+      - postgres-data:/var/lib/postgresql/data:rw
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "${DB_NAME}", "-U", "${DB_USER}" ]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+volumes:
+  postgres-data:
